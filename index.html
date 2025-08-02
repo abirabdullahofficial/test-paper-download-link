@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test Paper Downloads</title>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Hind Siliguri', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #ffffff;
+    }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background-color: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid #334155;
+    }
+    header img { height: 50px; }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .filter-bar select, .filter-bar input {
+      padding: 6px 12px; border-radius: 8px; border: none;
+      background-color: #334155; color: white;
+    }
+    .subject-section { padding: 20px; }
+    .subject-title {
+      font-size: 1.6rem; margin-bottom: 20px;
+      color: #38bdf8; display: flex; align-items: center; gap: 10px;
+    }
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 20px; padding: 20px;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      transition: transform 0.3s, box-shadow 0.3s;
+      text-align: center;
+    }
+    .card:hover {
+      transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.6);
+    }
+    .tags { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
+    .tag {
+      background-color: #334155; color: #d1d5db;
+      padding: 4px 10px; border-radius: 999px;
+      font-size: 0.75rem;
+    }
+    .chapter-icon {
+      font-size: 2.5rem; margin: 10px 0;
+      color: #38bdf8;
+    }
+    .chapter-name {
+      font-size: 1rem; font-weight: bold; margin: 8px 0; color: #f1f5f9;
+    }
+    .download-btn {
+      background-color: #38bdf8; color: #0f172a;
+      padding: 8px 16px; border: none; border-radius: 8px;
+      text-decoration: none; font-weight: bold; display: inline-block;
+      margin-top: 10px;
+    }
+    .download-btn:hover { background-color: #0ea5e9; }
+    @media (max-width:480px) { .subject-title { font-size:1.3rem; } }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="radiance logo.png" alt="Logo">
+    <div class="filter-bar">
+      <select id="filterSubject">
+        <option value="all">All Subjects</option>
+        <option value="Physics">Physics</option>
+        <option value="Chemistry">Chemistry</option>
+        <option value="Math">Math</option>
+        <option value="Biology">Biology</option>
+      </select>
+      <input type="text" id="searchInput" placeholder="চ্যাপ্টার খুঁজুন...">
+    </div>
+  </header>
+
+  <div id="mainContainer"></div>
+
+  <script>
+    const iconMapByChapter = {
+      // Physics
+      'ভৌত জগৎ ও পরিমাপ': 'fa-ruler',
+      'ভেক্টর': 'fa-arrows-alt',
+      'নিউটোনিয়ান বলবিদ্যা': 'fa-dumbbell',
+      'কাজ, শক্তি ও ক্ষমতা': 'fa-bolt',
+      'মহাকর্ষ ও অভিকর্ষ': 'fa-globe',
+      'পদার্থের গাঠনিক ধর্ম': 'fa-cubes',
+      'পর্যাবৃত্ত গতি': 'fa-sync-alt',
+      'আদর্শ গ্যাস ও গ্যাসের গতিতত্ত্ব': 'fa-wind',
+      'তাপগতিবিদ্যা': 'fa-temperature-high',
+      'স্থির তড়িৎ': 'fa-charging-station',
+      'চলতড়িৎ': 'fa-plug',
+      'ভৌত আলোকবিজ্ঞান': 'fa-lightbulb',
+      'আধুনিক পদার্থবিজ্ঞানের সূচনা': 'fa-atom',
+      'পরমাণুর মডেল এবং নিউক্লিয়ার পদার্থবিজ্ঞান': 'fa-fire-alt',
+      'সেমিকন্ডাক্টর ও ইলেকট্রনিকস': 'fa-microchip',
+      // Chemistry
+      'ল্যাবরেটরিয়ের নিরাপদ ব্যাবহার': 'fa-shield-alt',
+      'গুণগত রসায়ন': 'fa-vial',
+      'মৌলের পর্যায়বৃত্ত ধর্ম ও রাসায়নিক বন্ধন': 'fa-atom',
+      'রাসায়নিক পরিবর্তন': 'fa-exchange-alt',
+      'কর্মমুখী রসায়ন': 'fa-flask',
+      'পরিবেশ রসায়ন': 'fa-tree',
+      'জৈব রসায়ন': 'fa-leaf',
+      'পরিমাণগত রসায়ন': 'fa-balance-scale',
+      'তড়িৎ রসায়ন': 'fa-bolt-lightning',
+      'অর্থনইতিক রসায়ন': 'fa-money-bill-wave',
+      // Biology
+      'কোষ ও এর গঠন': 'fa-bacteria',
+      'কোষ বিভাজন': 'fa-project-diagram',
+      'কোষ রসায়ন': 'fa-vials',
+      'অণুজীব': 'fa-microscope',
+      'শৈবাল ও ছত্রাক': 'fa-spa',
+      'ব্রায়োফাইটা ও টেরেডোফাইটা': 'fa-seedling',
+      'নগ্নবীজী ও আবৃতবীজী উদ্ভিদ': 'fa-leaf',
+      'টিস্যু ও টিস্যুতন্ত্র': 'fa-layer-group',
+      'উদ্ভিদ শারীরতত্ত্ব': 'fa-seedling',
+      'উদ্ভিদ প্রজনন': 'fa-blossom',
+      'জীবপ্রযুক্তি': 'fa-dna',
+      'প্রাণীর বিভিন্নতা ও শ্রেণিবিন্যাস': 'fa-paw',
+      'প্রাণীর পরিচিতি': 'fa-user-astronaut',
+      'পরিপাক ও শোষণ': 'fa-drumstick-bite',
+      'রক্ত সঞ্চালন': 'fa-heart',
+      'শ্বাসক্রিয়া ও শ্বসন': 'fa-lungs',
+      'বর্জ্য ও নিষ্কাশন': 'fa-trash-alt',
+      'চলন ও অঙ্গচালনা': 'fa-running',
+      'সমন্বয় ও নিয়ন্ত্রণ': 'fa-brain',
+      'মানব জীবনের ধারাবাহিকতা': 'fa-infinity',
+      'মানবদেহের প্রতিরক্ষা': 'fa-shield-virus',
+      'জীনতত্ত্ব ও বিবর্তন': 'fa-dna',
+      // Math
+      'ম্যাট্রিক্স ও নির্ণায়ক': 'fa-table',
+      'ভেক্টর': 'fa-location-arrow',
+      'সরলরেখা': 'fa-pen-nib',
+      'বৃত্ত': 'fa-circle',
+      'ত্রিকোণমিতি': 'fa fa-exclamation-triangle',
+      'ফাংশন': 'fa-function',
+      'অন্তরীকরণ': 'fa-integral',
+      'জটিল সংখ্যা': 'fa-hashtag',
+      'বহুপদী ও সমীকরণ': 'fa-chart-line',
+      'কণিক': 'fa-atom',
+      'বিপরীত ত্রিকোণমিতিক ফাংশন': 'fa-undo',
+      'স্থিতিবিদ্যা': 'fa-balance-scale',
+      'সমতলে বস্তুকণার গতি': 'fa-shoe-prints'
+    };
+
+    const chapters = [
+      { subject: 'Physics', part: 'Part 1', name: 'Chapter 01: ভৌত জগৎ ও পরিমাপ', link: '#' },
+      { subject: 'Physics', part: 'Part 1', name: 'Chapter 02: ভেক্টর', link: '#' },
+      { subject: 'Physics', part: 'Part 1', name: 'Chapter 04: নিউটোনিয়ান বলবিদ্যা', link: '#' },
+      { subject: 'Physics', part: 'Part 1', name: 'Chapter 05: কাজ, শক্তি ও ক্ষমতা', link: '#' },
+      { subject: 'Physics', part: 'Part 1', name: 'Chapter 06: মহাকর্ষ ও অভিকর্ষ', link: '#' },
+      { subject: 'Physics', part: 'Part 1', name: 'Chapter 07: পদার্থের গাঠনিক ধর্ম', link: '#' },
+      { subject: 'Physics', part: 'Part 1', name: 'Chapter 08: পর্যাবৃত্ত গতি', link: '#' },
+      { subject: 'Physics', part: 'Part 1', name: 'Chapter 10: আদর্শ গ্যাস ও গ্যাসের গতিতত্ত্ব', link: '#' },
+      { subject: 'Physics', part: 'Part 2', name: 'Chapter 01: তাপগতিবিদ্যা', link: '#' },
+      { subject: 'Physics', part: 'Part 2', name: 'Chapter 02: স্থির তড়িৎ', link: '#' },
+      { subject: 'Physics', part: 'Part 2', name: 'Chapter 03: চলতড়িৎ', link: '#' },
+      { subject: 'Physics', part: 'Part 2', name: 'Chapter 07: ভৌত আলোকবিজ্ঞান', link: '#' },
+      { subject: 'Physics', part: 'Part 2', name: 'Chapter 08: আধুনিক পদার্থবিজ্ঞানের সূচনা', link: '#' },
+      { subject: 'Physics', part: 'Part 2', name: 'Chapter 09: পরমাণুর মডেল এবং নিউক্লিয়ার পদার্থবিজ্ঞান', link: '#' },
+      { subject: 'Physics', part: 'Part 2', name: 'Chapter 10: সেমিকন্ডাক্টর ও ইলেকট্রনিকস', link: '#' },
+      { subject: 'Chemistry', part: 'Part 1', name: 'Chapter 01: ল্যাবরেটরিয়ের নিরাপদ ব্যাবহার', link: '#' },
+      { subject: 'Chemistry', part: 'Part 1', name: 'Chapter 02: গুণগত রসায়ন', link: '#' },
+      { subject: 'Chemistry', part: 'Part 1', name: 'Chapter 03: মৌলের পর্যায়বৃত্ত ধর্ম ও রাসায়নিক বন্ধন', link: '#' },
+      { subject: 'Chemistry', part: 'Part 1', name: 'Chapter 04: রাসায়নিক পরিবর্তন', link: '#' },
+      { subject: 'Chemistry', part: 'Part 1', name: 'Chapter 05: কর্মমুখী রসায়ন', link: '#' },
+      { subject: 'Chemistry', part: 'Part 2', name: 'Chapter 01: পরিবেশ রসায়ন', link: '#' },
+      { subject: 'Chemistry', part: 'Part 2', name: 'Chapter 02: জৈব রসায়ন', link: '#' },
+      { subject: 'Chemistry', part: 'Part 2', name: 'Chapter 03: পরিমাণগত রসায়ন (Quantitative Chemistry)', link: '#' },
+      { subject: 'Chemistry', part: 'Part 2', name: 'Chapter 04: তড়িৎ রসায়ন', link: '#' },
+      { subject: 'Chemistry', part: 'Part 2', name: 'Chapter 05: অর্থনইতিক রসায়ন', link: '#' },
+      { subject: 'Biology', part: 'Part 1', name: 'Chapter 01: কোষ ও এর গঠন', link: '#' },
+      { subject: 'Biology', part: 'Part 1', name: 'Chapter 02: কোষ বিভাজন', link: '#' },
+      { subject: 'Biology', part: 'Part 1', name: 'Chapter 03: কোষ রসায়ন', link: '#' },
+      { subject: 'Biology', part: 'Part 1', name: 'Chapter 04: অণুজীব', link: '#' },
+      { subject: 'Biology', part: 'Part 1', name: 'Chapter 05: শৈবাল ও ছত্রাক', link: '#' },
+      { subject: 'Biology', part: 'Part 1', name: 'Chapter 06: ব্রায়োফাইটা ও টেরেডোফাইটা', link: '#' },
+      { subject: 'Biology', part: 'Part 1', name: 'Chapter 07: নগ্নবীজী ও আবৃতবীজী উদ্ভিদ', link: '#' },
+      { subject: 'Biology', part: 'Part 1', name: 'Chapter 08: টিস্যু ও টিস্যুতন্ত্র', link: '#' },
+      { subject: 'Biology', part: 'Part 1', name: 'Chapter 09: উদ্ভিদ শারীরতত্ত্ব', link: '#' },
+      { subject: 'Biology', part: 'Part 1', name: 'Chapter 10: উদ্ভিদ প্রজনন', link: '#' },
+      { subject: 'Biology', part: 'Part 1', name: 'Chapter 11: জীবপ্রযুক্তি', link: '#' },
+      { subject: 'Biology', part: 'Part 2', name: 'Chapter 01: প্রাণীর বিভিন্নতা ও শ্রেণিবিন্যাস', link: '#' },
+      { subject: 'Biology', part: 'Part 2', name: 'Chapter 02: প্রাণীর পরিচিতি', link: '#' },
+      { subject: 'Biology', part: 'Part 2', name: 'Chapter 03: পরিপাক ও শোষণ', link: '#' },
+      { subject: 'Biology', part: 'Part 2', name: 'Chapter 04: রক্ত সঞ্চালন', link: '#' },
+      { subject: 'Biology', part: 'Part 2', name: 'Chapter 05: শ্বাসক্রিয়া ও শ্বসন', link: '#' },
+      { subject: 'Biology', part: 'Part 2', name: 'Chapter 06: বর্জ্য ও নিষ্কাশন', link: '#' },
+      { subject: 'Biology', part: 'Part 2', name: 'Chapter 07: চলন ও অঙ্গচালনা', link: '#' },
+      { subject: 'Biology', part: 'Part 2', name: 'Chapter 08: সমন্বয় ও নিয়ন্ত্রণ', link: '#' },
+      { subject: 'Biology', part: 'Part 2', name: 'Chapter 09: মানব জীবনের ধারাবাহিকতা', link: '#' },
+      { subject: 'Biology', part: 'Part 2', name: 'Chapter 10: মানবদেহের প্রতিরক্ষা', link: '#' },
+      { subject: 'Biology', part: 'Part 2', name: 'Chapter 11: জীনতত্ত্ব ও বিবর্তন', link: '#' },
+      { subject: 'Math', part: 'Part 1', name: 'Chapter 01: ম্যাট্রিক্স ও নির্ণায়ক', link: '#' },
+      { subject: 'Math', part: 'Part 1', name: 'Chapter 02: ভেক্টর', link: '#' },
+      { subject: 'Math', part: 'Part 1', name: 'Chapter 03: সরলরেখা', link: '#' },
+      { subject: 'Math', part: 'Part 1', name: 'Chapter 04: বৃত্ত', link: '#' },
+      { subject: 'Math', part: 'Part 1', name: 'Chapter 05: ত্রিকোণমিতি', link: '#' },
+      { subject: 'Math', part: 'Part 1', name: 'Chapter 06: ফাংশন', link: '#' },
+      { subject: 'Math', part: 'Part 1', name: 'Chapter 07: অন্তরীকরণ', link: 'https://drive.google.com/uc?export=download&id=1Vi1O5iCjIh2EpqEUSEoMcBfWKzTWtkn5'},
+      { subject: 'Math', part: 'Part 1', name: 'Chapter 07: যোগজীকরণ', link: '#' },
+      { subject: 'Math', part: 'Part 2', name: 'Chapter 03: জটিল সংখ্যা', link: '#' },
+      { subject: 'Math', part: 'Part 2', name: 'Chapter 04: বহুপদী ও সমীকরণ', link: '#' },
+      { subject: 'Math', part: 'Part 2', name: 'Chapter 06: কণিক', link: '#' },
+      { subject: 'Math', part: 'Part 2', name: 'Chapter 07: বিপরীত ত্রিকোণমিতিক ফাংশন', link: '#' },
+      { subject: 'Math', part: 'Part 2', name: 'Chapter 08: স্থিতিবিদ্যা', link: '#' },
+      { subject: 'Math', part: 'Part 2', name: 'Chapter 09: সমতলে বস্তুকণার গতি', link: '#' }
+    ];
+
+    const main = document.getElementById('mainContainer');
+
+    function renderChapters(filterSubject='all', searchTerm='') {
+      main.innerHTML = '';
+      const grouped = {};
+      chapters.forEach(ch => {
+        if ((filterSubject==='all'||ch.subject===filterSubject)&&ch.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+          grouped[ch.subject] = grouped[ch.subject]||[];
+          grouped[ch.subject].push(ch);
+        }
+      });
+      Object.entries(grouped).forEach(([subject, items])=>{
+        const sec=document.createElement('div'); sec.className='subject-section';
+        const tit=document.createElement('h2'); tit.className='subject-title';
+        tit.innerHTML = `${subject}`;
+        sec.appendChild(tit);
+        const cont=document.createElement('div'); cont.className='card-container';
+        items.forEach(ch=>{
+          const card=document.createElement('div'); card.className='card';
+          const ic=document.createElement('div'); ic.className='chapter-icon';
+          const chapName = ch.name.split(':')[1]?.trim();
+          const iconCls = iconMapByChapter[chapName] || 'fa-circle';
+          ic.innerHTML = `<i class="fa-solid ${iconCls}"></i>`;
+          const tags=document.createElement('div'); tags.className='tags';
+          ['subject','part'].forEach(f=>{
+            const t=document.createElement('div'); t.className='tag'; t.textContent = ch[f];
+            tags.appendChild(t);
+          });
+          const nm=document.createElement('div'); nm.className='chapter-name'; nm.textContent = ch.name;
+          const btn=document.createElement('a'); btn.className='download-btn'; btn.href=ch.link; btn.download=''; btn.textContent='Download PDF';
+          card.append(ic,tags,nm,btn); cont.appendChild(card);
+        });
+        sec.appendChild(cont); main.appendChild(sec);
+      });
+    }
+    renderChapters();
+
+    document.getElementById('filterSubject').addEventListener('change', e=>{
+      renderChapters(e.target.value, document.getElementById('searchInput').value);
+    });
+    document.getElementById('searchInput').addEventListener('input', e=>{
+      renderChapters(document.getElementById('filterSubject').value, e.target.value);
+    });
+  </script>
+</body>
+</html>
